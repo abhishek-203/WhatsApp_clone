@@ -2,11 +2,11 @@ import Conversation from "../model/conversation.js";
 
 const newconversation = async (req, res) => {
   try {
-    const senderid = req.body.senderid;
+    const senderId = req.body.senderId;
     const receiverId = req.body.receiverId;
 
     const exist = await Conversation.findOne({
-      member: { $all: [receiverId, senderid] },
+      members: { $all: [receiverId, senderId] },
     });
 
     if (exist) {
@@ -14,11 +14,23 @@ const newconversation = async (req, res) => {
     }
 
     const newConversation = new Conversation({
-      member: [senderid, receiverId],
+      members: [senderId, receiverId],
     });
 
     await newConversation.save();
-    await res.status(200).json("Conversation saved successfully ");
+    return res.status(200).json("Conversation saved successfully ");
+  } catch (error) {
+    return res.status(500).json(error.message);
+  }
+};
+
+export const getConversation = async (req, res) => {
+  try {
+    const senderId = req.body.senderId;
+    const receiverId = req.body.receiverId;
+
+    let conversation = await Conversation.findOne({ members: { $all: [receiverId, senderId] } });
+    return res.status(200).json(conversation);
   } catch (error) {
     return res.status(500).json(error.message);
   }
